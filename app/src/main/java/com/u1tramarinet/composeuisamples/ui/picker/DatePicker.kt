@@ -1,6 +1,5 @@
 package com.u1tramarinet.composeuisamples.ui.picker
 
-import android.text.InputType
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,7 +7,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.u1tramarinet.composeuisamples.databinding.DatePickerBinding
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.util.Date
 
 @Composable
 fun DatePicker(
@@ -18,12 +22,14 @@ fun DatePicker(
     date: LocalDate = LocalDate.now(),
     onDateChanged: (year: Int, monthValue: Int, dayOfMonth: Int) -> Unit = { _, _, _ -> },
 ) {
+    val minDateTime = LocalDateTime.of(minDate, LocalTime.MIN).getTimeInMillis()
+    val maxDateTime = LocalDateTime.of(maxDate, LocalTime.MAX).getTimeInMillis()
     AndroidViewBinding(
         DatePickerBinding::inflate,
         modifier = modifier
     ) {
-        this.root.minDate = minDate.atStartOfDay().toEpochSecond(ZoneOffset.ofHours(9))
-        this.root.maxDate = maxDate.atStartOfDay().toEpochSecond(ZoneOffset.ofHours(9))
+        this.root.minDate = minDateTime
+        this.root.maxDate = maxDateTime
         this.root.init(
             date.year,
             date.monthValue - 1,
@@ -34,12 +40,17 @@ fun DatePicker(
     }
 }
 
+private fun LocalDateTime.getTimeInMillis(): Long {
+    val instant = this.toInstant(OffsetDateTime.now().offset)
+    return Date.from(instant).time
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun DatePickerPreview() {
     DatePicker(
         minDate = LocalDate.of(2024, 3, 2),
-        maxDate = LocalDate.of(2024, 3, 30),
+        maxDate = LocalDate.of(2024, 4, 30),
         date = LocalDate.of(2024, 3, 10)
     ) { year, monthValue, dayOfMonth ->
         Log.d("DatePicker", "year=${year}, month=${monthValue}, dayOfMonth=${dayOfMonth}")
